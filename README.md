@@ -1,10 +1,10 @@
 # MAS glass simulation data and analysis code
 
-This repository contains molecular dynamics simulation inputs and outputs, selected glass configurations, a structural-analysis script, and experimental Fourier transform infrared (FTIR) spectra for MgO–Al₂O₃–SiO₂ (MAS) glasses. The files support the associated manuscript:
+This repository contains molecular dynamics simulation inputs and outputs, selected glass configurations, a structural-analysis script, experimental density and ultrasonic elastic-modulus calculations, and experimental Fourier transform infrared (FTIR) spectra for MgO–Al₂O₃–SiO₂ (MAS) glasses. The files support the associated manuscript:
 
 **Effect of the Al₂O₃/SiO₂ ratio on the structure and Young’s modulus of MgO–Al₂O₃–SiO₂ glasses: Experiments and molecular dynamics simulations**
 
-The shared simulation package covers compositions B1–B6. Experimental FTIR spectra are included for B1–B5; B6 was investigated only by MD simulations. MgO is fixed at 23.4 mol%, while Al₂O₃ replaces SiO₂.
+The shared simulation package covers compositions B1–B6. Experimental density/modulus data and FTIR spectra are included for B1–B5; B6 was investigated only by MD simulations. MgO is fixed at 23.4 mol%, while Al₂O₃ replaces SiO₂.
 
 ## Repository structure
 
@@ -14,6 +14,7 @@ The shared simulation package covers compositions B1–B6. Experimental FTIR spe
 ├── Analysis/
 │   └── multi_xyzFiles_process.py
 ├── Data/
+│   ├── Experimental_Density_and_Youngs_Modulus_B1-B5.xlsx
 │   └── FTIR/
 │       ├── B1.CSV
 │       ├── B2.CSV
@@ -152,6 +153,39 @@ The workbook includes coordination counts, oxygen classifications, Qⁿ and deta
 
 For oxygen classification, the script treats Si and four-coordinated Al as network formers in its bridging/non-bridging oxygen rules. Its oxygen-tricluster rule also includes five- and six-coordinated Al. Consult `classify_oxygen` and the other analysis functions for the implemented definitions. Output categories should be interpreted using those definitions.
 
+## Experimental density and elastic moduli
+
+`Data/Experimental_Density_and_Youngs_Modulus_B1-B5.xlsx` contains the experimental density and ultrasonic elastic-modulus calculations for B1–B5. English headers replace the original Chinese labels. Original numerical inputs, formulas, sample order, and grouping have been retained. The source contains three density entries and three pairs of recorded ultrasonic velocities per composition; this does not by itself establish independent-specimen replication.
+
+The worksheet is `Sheet1`. Original row groups are B1: 7–9, B2: 11–13, B3: 3–5, B4: 16–18, and B5: 21–23. Column meanings are:
+
+| Columns | Contents and units |
+|---|---|
+| A | Sample identifier at the start of each group. |
+| B–C | Mass readings in air and water, respectively, in g. |
+| D–E | Water-minus-air density and air density, respectively, in g/cm³. |
+| F–G | Calculated density and group mean density, in g/cm³. |
+| I–J | Recorded transverse and longitudinal ultrasonic velocities, respectively; see the unit convention below. |
+| K–L | Poisson's ratio and group mean, dimensionless. |
+| M–N | Shear modulus and group mean, in GPa under the stated velocity convention. |
+| O–P | Young's modulus and group mean, in GPa under the stated velocity convention. |
+
+The density calculation is `rho = m_air / (m_air - m_water) * (rho_water - rho_air) + rho_air`. Poisson's ratio is calculated as `nu = [1 - 2(VT/VL)^2] / [2 - 2(VT/VL)^2]`. The modulus calculations use each composition's mean density: `G = rho_mean * VT^2` and `E = rho_mean * VL^2 * (1 + nu) * (1 - 2*nu) / (1 - nu)`. Group mean moduli average the three calculated entries. Some mean-density cells were stored as constants in the source and have been retained as such.
+
+**Velocity unit convention:** the original workbook does not state the instrument velocity unit. Its numerical inputs (VT approximately 3.8–3.9 and VL approximately 7.0–7.2) must be interpreted as km/s for these formulas, together with density in g/cm³, to yield moduli in GPa. The instrument export unit has not been independently verified. Accordingly, the velocity headers retain “as recorded”; no numerical conversion has been applied. In SI units, multiply the recorded velocity values by 1000 to obtain m/s under this convention, and convert density to kg/m³ before calculating moduli in Pa.
+
+The workbook gives the following group means, rounded here for readability:
+
+| Sample | Mean density (g/cm³) | Mean Young's modulus (GPa) |
+|---|---:|---:|
+| B1 | 2.61037 | 98.75757 |
+| B2 | 2.62787 | 100.43933 |
+| B3 | 2.64846 | 103.19540 |
+| B4 | 2.67308 | 104.94941 |
+| B5 | 2.69512 | 107.00375 |
+
+These are experimental results; they are distinct from the MD modulus results. The workbook does not specify the definition of the manuscript's plotted error bars.
+
 ## Experimental FTIR spectra
 
 `Data/FTIR/B1.CSV` through `B5.CSV` contain the spectra for the corresponding glass compositions. Each file is a comma-separated, two-column numerical table without a header:
@@ -165,7 +199,7 @@ The manuscript describes transmittance measurements and labels the plotted FTIR 
 
 ## Scope of this shared package
 
-One initial model and one selected analysis configuration are included for each of B1–B6, together with the supplied simulation logs and tensile outputs. Experimental FTIR spectra are supplied only for B1–B5. `400.xyz` is a single snapshot in each directory. Reproducing a multi-frame or independent-run average requires the actual frames and runs used for that average; the single-snapshot example above demonstrates the analysis workflow rather than reproducing an entire sampling ensemble. The separate elastic-tensor calculation workflow is not part of this package.
+One initial model and one selected analysis configuration are included for each of B1–B6, together with the supplied simulation logs and tensile outputs. Experimental density/modulus data and FTIR spectra are supplied only for B1–B5. `400.xyz` is a single snapshot in each directory. Reproducing a multi-frame or independent-run average requires the actual frames and runs used for that average; the single-snapshot example above demonstrates the analysis workflow rather than reproducing an entire sampling ensemble. The separate MD elastic-tensor calculation workflow is not part of this package.
 
 ## Citation and contact
 
