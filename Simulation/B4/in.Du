@@ -1,0 +1,112 @@
+##########徐鹏飞のin文件##########
+#模拟环境参数#
+units        metal                                                                                                                                                                        
+boundary     p p p                                                                                                                                                                      
+dimension    3                                                
+atom_style   charge                                                                                                       
+read_data    4.data                                         
+
+#电荷设置#
+set type 1 charge  2.4          	# Si						
+set type 2 charge  1.8          	# Al                        
+set type 3 charge  1.2          	# MG
+set type 4 charge  -1.2          	# O 
+
+#力场设置(势函数)#                                             
+pair_style        buck/coul/long  8.0 10.0                    
+pair_coeff   * *  0.0			1.0			    0.0           
+pair_coeff   1 4  13702.905		0.193817		54.681		  
+pair_coeff   2 4  12201.4170    0.19562		    31.997           
+pair_coeff	 3 4  7063.4907     0.2109          19.210                
+pair_coeff   4 4  2029.2204   	0.343645		192.58			
+													           
+
+kspace_style      pppm/stagger   1.0e-6                                   
+neighbor          2.0    bin									
+neigh_modify      every 1 delay 0 check yes                    
+timestep          0.001											
+thermo            500											
+thermo_style      custom step time atoms temp press pe ke etotal epair ebond vol density lx ly lz pzz        
+min_style         sd                                              
+minimize          1.0e-12  1.0e-12  3000 3000                       
+reset_timestep    0
+velocity          all create 300.0 5812775 dist gaussian                                               
+
+#玻璃制备#
+#step 1: 300 K NVT relaxation
+fix              1  all  nvt  temp  300  300  0.1
+run              10000
+unfix            1
+reset_timestep   0   
+
+#step 2: 4500 K NVT relaxation
+fix              2  all  nvt  temp  4500  4500  0.1
+run              150000
+unfix            2
+reset_timestep   0   
+
+#step 3: 4500-300 K quench	
+fix              3  all  nvt  temp  4500  300  0.1  
+dump             1  all  xyz  560  quench.coordinate 
+dump_modify      1  element Si Al Mg O 
+run              1680000  #2.5K/ps
+unfix            3
+undump           1
+reset_timestep   0   
+
+
+#step 4: 300 K NPT relaxation		
+fix              4  all  npt  temp  300  300  0.1  iso  0 0 1
+run              100000
+unfix            4
+reset_timestep   0   
+
+
+#step 5: 300 K NVT relaxation
+fix              5  all  nvt  temp  300  300  0.1		
+run              100000  
+unfix            5
+reset_timestep   0     
+
+
+#step 6: 300 K NVE relaxation
+fix              6  all  nve  temp  300  300  0.1  
+dump             2  all  xyz  50  NVE.coordinate 
+dump_modify      2  element Si Al Mg O 
+run              20000
+unfix            6
+undump           2
+reset_timestep   0
+ 
+
+#Z轴拉伸#
+#应变输出
+variable     midz     equal  "lz"
+variable     Lz0      equal  ${midz}
+variable     strainz  equal  "(lz-v_Lz0)/v_Lz0"
+#应力输出
+variable     stressz  equal "-pzz/10000"
+#文件保存
+fix          stretch  all  print  100 "${strainz} ${stressz}"  file  stressz-strainz.form  screen no
+#每100步输出一次应变和应力的大小
+#拉伸过程
+fix              11  all  nve
+fix              12  all  temp/rescale  5  300  300  5  1.0
+fix              13  all  deform  100  z  erate  0.05  remap  x
+#每100步拉伸一次模型，每次拉伸的应变=步数*时间步长*erate=100*0.001*0.05=0.005,其中步数*时间步长=时间
+dump             5  all  xyz  50  stretch.xyz
+dump_modify      5  element Si Al Mg O 
+run              15000 
+write_data       stretch.data
+
+
+
+
+
+
+
+
+
+
+
+
