@@ -28,8 +28,6 @@ The shared package covers compositions B1–B5. MgO is fixed at 23.4 mol%, while
     └── B5/
 ```
 
-The `Legacy/` directory preserves earlier scripts from this repository; use the script in `Analysis/` for this release.
-
 Directory and file names are case-sensitive on Linux. `Analysis/` contains the post-processing code; `Simulation/` contains the simulation files; `Data/FTIR/` contains the experimental spectra.
 
 ## Compositions and atom counts
